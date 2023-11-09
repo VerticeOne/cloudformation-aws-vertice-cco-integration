@@ -1,0 +1,239 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Set up Vertice governance infrastructure (IAM role, S3 bucket, CUR report).'
+
+Parameters:
+  AccountType:
+    Description: 'Your AWS account type (member for workloads, billing for billing, combined for both).'
+    Type: String
+    AllowedValues: ['billing', 'combined', 'member']
+
+  BillingReportCreate:
+    Description: 'Enable Cost and Usage Reports (CUR) and export results to defined S3 bucket.'
+    Default: 'false'
+    Type: String
+    AllowedValues: ['true', 'false']
+  BillingReportName:
+    Description: 'Name for created Cost and Usage Report.'
+    Type: String
+    Default: 'vertice-cur-report'
+  BillingReportS3Prefix:
+    Description: 'S3 bucket object name prefix for generated CUR.'
+    Type: String
+    Default: 'cur'
+
+  BillingBucketCreate:
+    Description: 'Create S3 bucket (see BillingBucketName); set to false for pre-created buckets.'
+    Default: 'false'
+    Type: String
+    AllowedValues: ['true', 'false']
+  BillingBucketName:
+    Description: 'Name of S3 bucket in which to store Cost and Usage Reports data.'
+    Default: ''
+    Type: String
+  BillingBucketDeletionPolicy:
+    Description: 'Behavior regarding S3 bucket if the stack is created/tries to replace it.'
+    Default: 'Retain'
+    Type: String
+    AllowedValues: ['Delete', 'Retain', 'RetainExceptOnCreate']
+
+  VerticeIAMRoleCreate:
+    Description: "Create IAM role allowing Vertice to access your account's billing data."
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  VerticeIAMRoleAccountIDs:
+    Type: CommaDelimitedList
+    Description: 'List of Vertice AWS account IDs that will be used to assume the role in your account.'
+    Default: '642184526628,762729743961'
+  VerticeIAMRoleName:
+    Type: String
+    Description: 'Name of the Vertice IAM role to be created in your account.'
+    Default: 'VerticeGovernanceRole'
+
+Conditions:
+  BillingAccess: !Or
+    - !Equals [!Ref AccountType, 'billing']
+    - !Equals [!Ref AccountType, 'combined']
+  CoreAccess: !Or
+    - !Equals [!Ref AccountType, 'member']
+    - !Equals [!Ref AccountType, 'combined']
+
+  CreateBucket: !And
+    - !Equals [!Ref BillingBucketCreate, 'true']
+    - !Condition BillingAccess
+  CreateReport: !And
+    - !Equals [!Ref BillingReportCreate, 'true']
+    - !Condition BillingAccess
+
+  CreateRole: !Equals [!Ref VerticeIAMRoleCreate, 'true']
+  CreateBillingPolicy: !And
+    - !Condition BillingAccess
+    - !Condition CreateRole
+  CreateCorePolicy: !And
+    - !Condition CoreAccess
+    - !Condition CreateRole
+
+Resources:
+  VerticeGovernanceS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Condition: CreateBucket
+    Properties:
+      BucketName: !Ref BillingBucketName
+    DeletionPolicy: !Ref BillingBucketDeletionPolicy
+    UpdateReplacePolicy: !Ref BillingBucketDeletionPolicy
+  VerticeGovernanceS3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Condition: CreateBucket
+    Properties:
+      Bucket: !Ref VerticeGovernanceS3Bucket
+      PolicyDocument:
+        Id: VerticeGovernanceS3BucketPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowSecureRequestsOnly
+            Effect: 'Deny'
+            Principal: '*'
+            Action: ['s3:*']
+            Condition:
+              Bool:
+                'aws:SecureTransport': false
+            Resource:
+              - !Sub 'arn:aws:s3:::${BillingBucketName}'
+              - !Sub 'arn:aws:s3:::${BillingBucketName}/*'
+          - Sid: AllowBillingBucketAccess
+            Effect: 'Allow'
+            Action:
+              - 's3:GetBucketAcl'
+              - 's3:GetBucketPolicy'
+            Principal:
+              Service: ['billingreports.amazonaws.com']
+            Resource:
+              - !Sub 'arn:aws:s3:::${BillingBucketName}'
+          - Sid: AllowBillingBucketObjectAccess
+            Effect: 'Allow'
+            Action: 's3:PutObject'
+            Principal:
+              Service: ['billingreports.amazonaws.com']
+            Resource:
+              - !Sub 'arn:aws:s3:::${BillingBucketName}/*'
+
+  VerticeGovernanceBillingReport:
+    Type: 'AWS::CUR::ReportDefinition'
+    Condition: CreateReport
+    Properties:
+      ReportName: !Ref BillingReportName
+      AdditionalArtifacts: ['ATHENA']
+      AdditionalSchemaElements: ['RESOURCES']
+      Compression: 'Parquet'
+      Format: 'Parquet'
+      RefreshClosedReports: true
+      ReportVersioning: 'OVERWRITE_REPORT'
+      S3Bucket: !If [CreateBucket, !Ref VerticeGovernanceS3Bucket, !Ref BillingBucketName]
+      S3Prefix: !Ref BillingReportS3Prefix
+      S3Region: !Ref AWS::Region
+      TimeUnit: 'HOURLY'
+
+  VerticeGovernanceIAMRole:
+    Type: 'AWS::IAM::Role'
+    Condition: CreateRole
+    Properties:
+      Description: 'Role assumed by Vertice to monitor your spending'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              AWS: !Ref VerticeIAMRoleAccountIDs
+            Action: 'sts:AssumeRole'
+      Path: /vertice/
+      RoleName: !Ref VerticeIAMRoleName
+      MaxSessionDuration: 43200
+
+  VerticeGovernanceCheckRolePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateRole
+    Properties:
+      Description: 'Policy allowing Vertice to simulate its IAM role in your account'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: 'Allow'
+            Action:
+              - 'iam:SimulatePrincipalPolicy'
+            Resource: !GetAtt VerticeGovernanceIAMRole.Arn
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceBillingPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateBillingPolicy
+    Properties:
+      Description: "Policy allowing Vertice to monitor your account's billing"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeBillingAccess'
+            Effect: 'Allow'
+            Action:
+              - 'budgets:Describe*'
+              - 'budgets:View*'
+              - 'ce:Describe*'
+              - 'ce:Get*'
+              - 'ce:List*'
+              - 'cur:Describe*'
+              - 'pricing:*'
+              - 'savingsplans:Describe*'
+              - 'savingsplans:List*'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceCorePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateCorePolicy
+    Properties:
+      Description: "Policy allowing Vertice to monitor your account's workloads for cost optimization purposes"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeCostOptimizationAccess'
+            Effect: 'Allow'
+            Action:
+              - 'cloudwatch:Describe*'
+              - 'cloudwatch:GetMetricStatistics'
+              - 'cloudwatch:List*'
+              - 'ec2:Describe*'
+              - 'ec2:GetCapacityReservationUsage'
+              - 'ec2:GetEbsEncryptionByDefault'
+              - 'ec2:List*'
+              - 'ec2:SearchTransitGatewayRoutes'
+              - 'ecr:BatchCheck*'
+              - 'ecr:BatchGet*'
+              - 'ecr:Describe*'
+              - 'ecr:List*'
+              - 'ecs:Describe*'
+              - 'ecs:List*'
+              - 'elasticache:Describe*'
+              - 'elasticache:List*'
+              - 'es:Describe*'
+              - 'es:List*'
+              - 'organizations:Describe*'
+              - 'organizations:List*'
+              - 'rds:Describe*'
+              - 'rds:List*'
+              - 'redshift:Describe*'
+              - 'redshift:View*'
+              - 's3:GetBucketLocation'
+              - 's3:GetBucketTagging'
+              - 's3:List*'
+              - 'savingsplans:Describe*'
+              - 'savingsplans:List*'
+              - 'tag:Get*'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+Outputs:
+  VerticeGovernanceRoleArn:
+    Condition: CreateRole
+    Value: !GetAtt VerticeGovernanceIAMRole.Arn

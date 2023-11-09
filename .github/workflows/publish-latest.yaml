@@ -1,0 +1,32 @@
+---
+name: Publish latest version of CloudFormation template
+
+"on":
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to promote'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      S3_PREFIX: s3://vertice-cco-cloudformation-templates/vertice-governance
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-duration-seconds: ${{ vars.AWS_ROLE_DURATION_SECONDS }}
+          role-to-assume: ${{ vars.VSS_AWS_ROLE }}
+
+      - name: Publish selected template version as latest
+        run: aws s3 cp ${S3_PREFIX}/${{ inputs.tag }}.yaml ${S3_PREFIX}.yaml
