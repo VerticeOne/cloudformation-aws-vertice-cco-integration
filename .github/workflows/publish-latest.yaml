@@ -1,5 +1,6 @@
 ---
-name: Publish latest version of CloudFormation template
+name: Publish template as latest
+run-name: Publish template ${{ inputs.tag }} as latest
 
 "on":
   workflow_dispatch:
@@ -29,4 +30,4 @@ jobs:
           role-to-assume: ${{ vars.VSS_AWS_ROLE }}
 
       - name: Publish selected template version as latest
-        run: aws s3 cp ${S3_PREFIX}/${{ inputs.tag }}.yaml ${S3_PREFIX}.yaml
+        run: aws s3 cp ${S3_PREFIX}-${{ inputs.tag }}.yaml ${S3_PREFIX}.yaml

@@ -1,5 +1,6 @@
 ---
-name: Upload CloudFormation template to S3 bucket
+name: Upload template to S3
+run-name: Upload template ${{ github.ref_name }} to S3
 
 "on":
   push:
@@ -26,4 +27,4 @@ jobs:
           role-to-assume: ${{ vars.VSS_AWS_ROLE }}
 
       - name: Upload tagged CloudFormation template to S3
-        run: aws s3 cp templates/governance.yaml ${S3_PREFIX}/${{ github.ref_name }}.yaml
+        run: aws s3 cp templates/governance.yaml ${S3_PREFIX}-${{ github.ref_name }}.yaml
