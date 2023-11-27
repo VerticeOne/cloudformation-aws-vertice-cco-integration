@@ -9,7 +9,9 @@ infrastructure in your account, including:
 * a Cost and Usage Report definition.
 
 We also offer Terraform configuration of the same at
-[VerticeOne/terraform-aws-vertice-integration](https://github.com/VerticeOne/terraform-aws-vertice-integration).
+[VerticeOne/terraform-aws-vertice-integration](https://github.com/VerticeOne/terraform-aws-vertice-integration),
+which supports a more fine-tuned configuration of permissions
+granted to Vertice in your account.
 
 ## Using the template
 
