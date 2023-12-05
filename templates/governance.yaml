@@ -243,6 +243,15 @@ Resources:
         - !Ref VerticeGovernanceIAMRole
 
 Outputs:
+  BillingReportName:
+    Condition: CreateReport
+    Value: !Ref BillingReportName
+  BillingReportS3Prefix:
+    Condition: CreateReport
+    Value: !Ref BillingReportS3Prefix
   VerticeGovernanceRoleArn:
     Condition: CreateRole
     Value: !GetAtt VerticeGovernanceIAMRole.Arn
+  VerticeIAMRoleAccountIDs:
+    Condition: CreateRole
+    Value: !Join [",", !Ref VerticeIAMRoleAccountIDs]
