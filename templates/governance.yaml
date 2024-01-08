@@ -190,6 +190,8 @@ Resources:
               - 'ec2:DescribeReservedInstancesOfferings'
               - 'ec2:ModifyReservedInstances'
               - 'ec2:PurchaseReservedInstancesOffering'
+              - 'organizations:Describe*'
+              - 'organizations:List*'
               - 'pricing:*'
               - 'savingsplans:Describe*'
               - 'savingsplans:List*'
