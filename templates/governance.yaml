@@ -199,6 +199,15 @@ Resources:
               - 'savingsplans:Describe*'
               - 'savingsplans:List*'
             Resource: '*'
+          - Sid: 'VerticeBillingBucketAccess'
+            Effect: 'Allow'
+            Action:
+              - 's3:GetBucketLocation'
+              - 's3:ListBucket'
+              - 's3:GetObject'
+            Resource:
+              - !Sub 'arn:aws:s3:::${BillingBucketName}'
+              - !Sub 'arn:aws:s3:::${BillingBucketName}/*'
       Roles:
         - !Ref VerticeGovernanceIAMRole
 
