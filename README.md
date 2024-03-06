@@ -4,9 +4,9 @@ This repository provides CloudFormation templates helping to configure
 [Vertice Cloud Cost Optimization](https://www.vertice.one/product/cloud-cost-optimization)
 infrastructure in your account, including:
 
-* an IAM role allowing Vertice platform to access your resources,
-* an S3 bucket to store Cost and Usage Reports (CUR), and
-* a Cost and Usage Report definition.
+- an IAM role allowing Vertice platform to access your resources,
+- an S3 bucket to store Cost and Usage Reports (CUR), and
+- a Cost and Usage Report definition.
 
 We also offer Terraform configuration of the same at
 [VerticeOne/terraform-aws-vertice-integration](https://github.com/VerticeOne/terraform-aws-vertice-integration),
@@ -34,12 +34,21 @@ we recommend deploying this template to that region to ensure smooth operation.
 
 ### Parameters
 
-Only the **AccountType** parameter is strictly required by the template,
-supporting the following values:
+#### Required parameters
 
-* `billing` (CUR with S3 bucket should be configured in the account);
-* `member` (IAM role should be allowed to monitor your AWS services); or
-* `combined` (both `billing` and `member` resources should be set up).
+##### AccountType
+
+supports the following values:
+
+- `billing` (CUR with S3 bucket should be configured in the account);
+- `member` (IAM role should be allowed to monitor your AWS services); or
+- `combined` (both `billing` and `member` resources should be set up).
+
+##### VerticeSTSExternalID
+
+Unique identifier for the Vertice platform to assume the IAM role in your account.
+
+#### Optional parameters
 
 The creation of specific resources is further controlled by the
 **BillingReportCreate**, **BillingBucketCreate** and **VerticeIAMRoleCreate**

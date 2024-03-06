@@ -49,6 +49,9 @@ Parameters:
     Type: String
     Description: 'Name of the Vertice IAM role to be created in your account.'
     Default: 'VerticeGovernanceRole'
+  VerticeSTSExternalID:
+    Type: String
+    Description: 'Unique identifier for the Vertice platform to assume the IAM role in your account'
 
 Conditions:
   BillingAccess: !Or
@@ -128,7 +131,12 @@ Resources:
       Format: 'Parquet'
       RefreshClosedReports: true
       ReportVersioning: 'OVERWRITE_REPORT'
-      S3Bucket: !If [CreateBucket, !Ref VerticeGovernanceS3Bucket, !Ref BillingBucketName]
+      S3Bucket:
+        !If [
+          CreateBucket,
+          !Ref VerticeGovernanceS3Bucket,
+          !Ref BillingBucketName,
+        ]
       S3Prefix: !Ref BillingReportS3Prefix
       S3Region: !Ref AWS::Region
       TimeUnit: 'HOURLY'
@@ -145,6 +153,9 @@ Resources:
             Principal:
               AWS: !Ref VerticeIAMRoleAccountIDs
             Action: 'sts:AssumeRole'
+            Condition:
+              StringLike:
+                'sts:ExternalId': !Ref VerticeSTSExternalID
       Path: /vertice/
       RoleName: !Ref VerticeIAMRoleName
       MaxSessionDuration: 43200
@@ -268,4 +279,4 @@ Outputs:
     Value: !GetAtt VerticeGovernanceIAMRole.Arn
   VerticeIAMRoleAccountIDs:
     Condition: CreateRole
-    Value: !Join [",", !Ref VerticeIAMRoleAccountIDs]
+    Value: !Join [',', !Ref VerticeIAMRoleAccountIDs]
