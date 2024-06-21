@@ -15,6 +15,10 @@ granted to Vertice in your account.
 
 ## Using the template
 
+> [!IMPORTANT]  
+> Make sure you are in region **us-east-1**
+> See [Region Selection](#region-selection) for explanation
+
 The [Vertice governance CloudFormation template](templates/governance.yaml) is published
 to the following S3 address:
 
@@ -26,7 +30,7 @@ To deploy it, [create a new CloudFormation Stack](https://docs.aws.amazon.com/AW
 providing the URL above as the `--template-url` parameter (or `Amazon S3 URL`
 in the AWS console).
 
-### :warning: Region selection
+### Region selection
 
 As documented [in this upstream issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/1825),
 the AWS CUR functionality is limited to the `us-east-1` region. Therefore,
