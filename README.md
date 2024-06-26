@@ -1,7 +1,4 @@
----
-
 # Vertice Cloud Cost Optimization CloudFormation templates
-
 This repository provides CloudFormation templates helping to configure
 [Vertice Cloud Cost Optimization](https://www.vertice.one/product/cloud-cost-optimization)
 infrastructure in your account, including:
@@ -14,8 +11,6 @@ We also offer Terraform configuration of the same at
 [VerticeOne/terraform-aws-vertice-integration](https://github.com/VerticeOne/terraform-aws-vertice-integration),
 which supports a more fine-tuned configuration of permissions
 granted to Vertice in your account.
-
----
 
 ## Using the template
 
@@ -43,8 +38,6 @@ As documented [in this upstream issue](https://github.com/aws-cloudformation/clo
 the AWS CUR functionality is limited to the `us-east-1` region. Therefore, you must deploy this template to that region to ensure smooth operation.
 
 If you chose not to create the CUR report, S3 bucket or other resources using this CloudFormation, then please create those resources first and then input the details when using this CloudFormation to complete the final setup steps.
-
----
 
 ### Parameters
 
