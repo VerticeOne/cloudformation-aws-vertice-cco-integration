@@ -1,3 +1,5 @@
+---
+
 # Vertice Cloud Cost Optimization CloudFormation templates
 
 This repository provides CloudFormation templates helping to configure
@@ -13,6 +15,8 @@ We also offer Terraform configuration of the same at
 which supports a more fine-tuned configuration of permissions
 granted to Vertice in your account.
 
+---
+
 ## Using the template
 
 > [!IMPORTANT]  
@@ -26,15 +30,21 @@ to the following S3 address:
 https://vertice-cco-cloudformation-templates.s3.eu-west-1.amazonaws.com/vertice-governance.yaml
 ```
 
-To deploy it, [create a new CloudFormation Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-cli-creating-stack.html),
+> [!TIP]
+> To deploy it, use this CloudFormation [quick-create link](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?templateURL=https://vertice-cco-cloudformation-templates.s3.eu-west-1.amazonaws.com/vertice-governance.yaml) and populate all of the fields.
+
+Alternatively, [create a new CloudFormation Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-cli-creating-stack.html),
 providing the URL above as the `--template-url` parameter (or `Amazon S3 URL`
 in the AWS console).
 
 ### Region selection
 
 As documented [in this upstream issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/1825),
-the AWS CUR functionality is limited to the `us-east-1` region. Therefore,
-we recommend deploying this template to that region to ensure smooth operation.
+the AWS CUR functionality is limited to the `us-east-1` region. Therefore, you must deploy this template to that region to ensure smooth operation.
+
+If you chose not to create the CUR report, S3 bucket or other resources using this CloudFormation, then please create those resources first and then input the details when using this CloudFormation to complete the final setup steps.
+
+---
 
 ### Parameters
 
@@ -48,13 +58,17 @@ supports the following values:
 - `member` (IAM role should be allowed to monitor your AWS services); or
 - `combined` (both `billing` and `member` resources should be set up).
 
+##### BillingBucketName
+
+The **BillingBucketName** will be required in order for the role to have the correct policy.
+
 ##### VerticeSTSExternalID
 
-Unique identifier for the Vertice platform to assume the IAM role in your account.
+The Unique identifier provided to you for the Vertice platform to assume the IAM role in your account.
 
 #### Optional parameters
 
 The creation of specific resources is further controlled by the
 **BillingReportCreate**, **BillingBucketCreate** and **VerticeIAMRoleCreate**
-parameters. The **BillingBucketName** will usually also need to be provided.
+parameters.
 Please see the `Parameters` section of the template for further details.
