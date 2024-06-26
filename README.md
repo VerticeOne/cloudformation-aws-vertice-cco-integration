@@ -65,3 +65,9 @@ The creation of specific resources is further controlled by the
 **BillingReportCreate**, **BillingBucketCreate** and **VerticeIAMRoleCreate**
 parameters.
 Please see the `Parameters` section of the template for further details.
+
+## Removing Vertice Resources
+
+In order to remove Vertice resources from your environment you simply need to delete the CloudFormation Stack from the [use-east-1](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks?filteringText=&filteringStatus=active&viewNested=true) region.
+
+This will remove all resources created through the CloudFormation template.
