@@ -1,3 +1,4 @@
+---
 AWSTemplateFormatVersion: 2010-09-09
 Description: 'Set up Vertice governance infrastructure (IAM role, S3 bucket, CUR report).'
 
@@ -6,7 +7,6 @@ Parameters:
     Description: 'Your AWS account type (member for workloads, billing for billing, combined for both).'
     Type: String
     AllowedValues: ['billing', 'combined', 'member']
-
   BillingReportCreate:
     Description: 'Enable Cost and Usage Reports (CUR) and export results to defined S3 bucket.'
     Default: 'false'
@@ -20,7 +20,6 @@ Parameters:
     Description: 'S3 bucket object name prefix for generated CUR.'
     Type: String
     Default: 'cur'
-
   BillingBucketCreate:
     Description: 'Create S3 bucket (see BillingBucketName); set to false for pre-created buckets.'
     Default: 'false'
@@ -28,14 +27,14 @@ Parameters:
     AllowedValues: ['true', 'false']
   BillingBucketName:
     Description: 'Name of S3 bucket in which to store Cost and Usage Reports data.'
-    Default: ''
     Type: String
+    MinLength: "3"
+    MaxLength: "63"
   BillingBucketDeletionPolicy:
     Description: 'Behavior regarding S3 bucket if the stack is created/tries to replace it.'
     Default: 'Retain'
     Type: String
     AllowedValues: ['Delete', 'Retain', 'RetainExceptOnCreate']
-
   VerticeIAMRoleCreate:
     Description: "Create IAM role allowing Vertice to access your account's billing data."
     Default: 'true'
@@ -52,6 +51,8 @@ Parameters:
   VerticeSTSExternalID:
     Type: String
     Description: 'Unique identifier for the Vertice platform to assume the IAM role in your account'
+    MinLength: "36"
+    MaxLength: "36"
 
 Conditions:
   BillingAccess: !Or
@@ -268,15 +269,9 @@ Resources:
         - !Ref VerticeGovernanceIAMRole
 
 Outputs:
-  BillingReportName:
-    Condition: CreateReport
-    Value: !Ref BillingReportName
-  BillingReportS3Prefix:
-    Condition: CreateReport
-    Value: !Ref BillingReportS3Prefix
   VerticeGovernanceRoleArn:
-    Condition: CreateRole
     Value: !GetAtt VerticeGovernanceIAMRole.Arn
+  FullS3Path:
+    Value: !Join ["/", ["s3:/", !Ref BillingBucketName, !Ref BillingReportName, !Ref BillingReportS3Prefix ] ]
   VerticeIAMRoleAccountIDs:
-    Condition: CreateRole
     Value: !Join [',', !Ref VerticeIAMRoleAccountIDs]
