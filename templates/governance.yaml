@@ -272,6 +272,6 @@ Outputs:
   VerticeGovernanceRoleArn:
     Value: !GetAtt VerticeGovernanceIAMRole.Arn
   FullS3Path:
-    Value: !Join ['/', ["s3:/",!Ref BillingBucketName, !Ref BillingReportName, !Ref BillingReportS3Prefix ] ]
+    Value: !Join ["/", ["s3:/", !Ref BillingBucketName, !Ref BillingReportName, !Ref BillingReportS3Prefix ] ]
   VerticeIAMRoleAccountIDs:
     Value: !Join [',', !Ref VerticeIAMRoleAccountIDs]
