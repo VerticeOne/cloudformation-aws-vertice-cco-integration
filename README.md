@@ -37,7 +37,7 @@ in the AWS console).
 As documented [in this upstream issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/1825),
 the AWS CUR functionality is limited to the `us-east-1` region. Therefore, you must deploy this template to that region to ensure smooth operation.
 
-If you chose not to create the CUR report, S3 bucket or other resources using this CloudFormation, then please create those resources first and then input the details when using this CloudFormation to complete the final setup steps.
+If you chose not to create the CUR report, S3 bucket or other resources using this CloudFormation template, then please create those resources first and then input the details when using this CloudFormation to complete the final setup steps.
 
 ### Parameters
 
@@ -65,6 +65,14 @@ The creation of specific resources is further controlled by the
 **BillingReportCreate**, **BillingBucketCreate** and **VerticeIAMRoleCreate**
 parameters.
 Please see the `Parameters` section of the template for further details.
+
+##### BillingReportSplitCostAllocationData
+
+The template supports the [Split Cost Allocation Data](https://aws.amazon.com/blogs/aws-cloud-financial-management/improve-cost-visibility-of-amazon-eks-with-aws-split-cost-allocation-data/) opt-in feature of the Cost and Usage Report, which provides more granular data for ECS/EKS usage. Please note that this feature may increase your costs slightly due to a larger volume of usage data generated.
+
+To enable this feature:
+1. Opt in to Split Cost Allocation Data in the [Cost Management Preferences](https://us-east-1.console.aws.amazon.com/costmanagement/home?region=eu-west-1#/settings) page of the AWS Console (Step 1 of the guide linked above).
+2. Set the `BillingReportSplitCostAllocationData: true` parameter on this module.
 
 ## Removing Vertice Resources
 

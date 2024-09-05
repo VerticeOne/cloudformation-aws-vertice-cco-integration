@@ -20,6 +20,11 @@ Parameters:
     Description: 'S3 bucket object name prefix for generated CUR.'
     Type: String
     Default: 'cur'
+  BillingReportSplitCostAllocationData:
+    Description: 'Include SPLIT_COST_ALLOCATION_DATA in the CUR output schema.'
+    Default: 'false'
+    Type: String
+    AllowedValues: ['true', 'false']
   BillingBucketCreate:
     Description: 'Create S3 bucket (see BillingBucketName); set to false for pre-created buckets.'
     Default: 'false'
@@ -58,6 +63,7 @@ Conditions:
   BillingAccess: !Or
     - !Equals [!Ref AccountType, 'billing']
     - !Equals [!Ref AccountType, 'combined']
+  BillingSplitCost: !Equals [!Ref BillingReportSplitCostAllocationData, 'true']
   CoreAccess: !Or
     - !Equals [!Ref AccountType, 'member']
     - !Equals [!Ref AccountType, 'combined']
@@ -127,7 +133,9 @@ Resources:
     Properties:
       ReportName: !Ref BillingReportName
       AdditionalArtifacts: ['ATHENA']
-      AdditionalSchemaElements: ['RESOURCES']
+      AdditionalSchemaElements:
+        - 'RESOURCES'
+        - !If [BillingSplitCost, 'SPLIT_COST_ALLOCATION_DATA', !Ref AWS::NoValue]
       Compression: 'Parquet'
       Format: 'Parquet'
       RefreshClosedReports: true
