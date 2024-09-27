@@ -4,8 +4,9 @@ This repository provides CloudFormation templates helping to configure
 infrastructure in your account, including:
 
 - an IAM role allowing Vertice platform to access your resources,
-- an S3 bucket to store Cost and Usage Reports (CUR), and
-- a Cost and Usage Report definition.
+- an S3 bucket to store Cost and Usage Reports (CUR),
+- a Cost and Usage Report definition, and
+- an AWS Data Exports report definition (COR format).
 
 We also offer Terraform configuration of the same at
 [VerticeOne/terraform-aws-vertice-integration](https://github.com/VerticeOne/terraform-aws-vertice-integration),
@@ -15,8 +16,8 @@ granted to Vertice in your account.
 ## Using the template
 
 > [!IMPORTANT]  
-> Make sure you are in region **us-east-1**
-> See [Region Selection](#region-selection) for explanation
+> Make sure you are in the **us-east-1** region.
+> See [Region Selection](#region-selection) for explanation.
 
 The [Vertice governance CloudFormation template](templates/governance.yaml) is published
 to the following S3 address:
@@ -26,7 +27,7 @@ https://vertice-cco-cloudformation-templates.s3.eu-west-1.amazonaws.com/vertice-
 ```
 
 > [!TIP]
-> To deploy it, use this CloudFormation [quick-create link](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?templateURL=https://vertice-cco-cloudformation-templates.s3.eu-west-1.amazonaws.com/vertice-governance.yaml) and populate all of the fields.
+> To deploy the stack easily, use this CloudFormation [quick-create link](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?templateURL=https://vertice-cco-cloudformation-templates.s3.eu-west-1.amazonaws.com/vertice-governance.yaml) and populate all of the fields.
 
 Alternatively, [create a new CloudFormation Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-cli-creating-stack.html),
 providing the URL above as the `--template-url` parameter (or `Amazon S3 URL`
@@ -62,7 +63,7 @@ The Unique identifier provided to you for the Vertice platform to assume the IAM
 #### Optional parameters
 
 The creation of specific resources is further controlled by the
-**BillingReportCreate**, **BillingBucketCreate** and **VerticeIAMRoleCreate**
+**BillingReportCreate**, **BillingBucketCreate**, **DataExportCreate**, and **VerticeIAMRoleCreate**
 parameters.
 Please see the `Parameters` section of the template for further details.
 

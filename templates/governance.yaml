@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'Set up Vertice governance infrastructure (IAM role, S3 bucket, CUR report).'
+Description: 'Set up Vertice governance infrastructure (IAM role, S3 bucket, CUR/COR report).'
 
 Parameters:
   AccountType:
@@ -40,6 +40,19 @@ Parameters:
     Default: 'Retain'
     Type: String
     AllowedValues: ['Delete', 'Retain', 'RetainExceptOnCreate']
+  DataExportCreate:
+    Description: 'Enable AWS Data Exports (COR format) and export results to defined S3 bucket.'
+    Default: 'false'
+    Type: String
+    AllowedValues: ['true', 'false']
+  DataExportName:
+    Description: 'Name for created AWS Data Export.'
+    Type: String
+    Default: 'vertice-cor-report'
+  DataExportS3Prefix:
+    Description: 'S3 bucket object name prefix for AWS Data Export output.'
+    Type: String
+    Default: 'cor'
   VerticeIAMRoleCreate:
     Description: "Create IAM role allowing Vertice to access your account's billing data."
     Default: 'true'
@@ -73,6 +86,9 @@ Conditions:
     - !Condition BillingAccess
   CreateReport: !And
     - !Equals [!Ref BillingReportCreate, 'true']
+    - !Condition BillingAccess
+  CreateDataExport: !And
+    - !Equals [!Ref DataExportCreate, 'true']
     - !Condition BillingAccess
 
   CreateRole: !Equals [!Ref VerticeIAMRoleCreate, 'true']
@@ -115,17 +131,20 @@ Resources:
             Action:
               - 's3:GetBucketAcl'
               - 's3:GetBucketPolicy'
+              - 's3:PutObject'
             Principal:
-              Service: ['billingreports.amazonaws.com']
+              Service:
+                - 'bcm-data-exports.amazonaws.com'
+                - 'billingreports.amazonaws.com'
             Resource:
               - !Sub 'arn:aws:s3:::${BillingBucketName}'
-          - Sid: AllowBillingBucketObjectAccess
-            Effect: 'Allow'
-            Action: 's3:PutObject'
-            Principal:
-              Service: ['billingreports.amazonaws.com']
-            Resource:
               - !Sub 'arn:aws:s3:::${BillingBucketName}/*'
+            Condition:
+              StringLike:
+                'aws:SourceArn':
+                  - !Sub 'arn:aws:bcm-data-exports:us-east-1:${AWS::AccountId}:export/*'
+                  - !Sub 'arn:aws:cur:us-east-1:${AWS::AccountId}:definition/*'
+                'aws:SourceAccount': !Sub ${AWS::AccountId}
 
   VerticeGovernanceBillingReport:
     Type: 'AWS::CUR::ReportDefinition'
@@ -149,6 +168,46 @@ Resources:
       S3Prefix: !Ref BillingReportS3Prefix
       S3Region: !Ref AWS::Region
       TimeUnit: 'HOURLY'
+
+  VerticeGovernanceDataExport:
+    Type: AWS::BCMDataExports::Export
+    Condition: CreateDataExport
+    Metadata:
+      # https://github.com/aws/serverless-application-model/issues/259#issuecomment-523953576
+      DependsOn: [!If [CreateBucket, !Ref VerticeGovernanceS3BucketPolicy, !Ref AWS::NoValue]]
+    Properties:
+      Export:
+        DataQuery:
+          QueryStatement: SELECT account_id, action_type, currency_code, current_resource_details,
+            current_resource_summary, current_resource_type, estimated_monthly_cost_after_discount,
+            estimated_monthly_cost_before_discount, estimated_monthly_savings_after_discount,
+            estimated_monthly_savings_before_discount, estimated_savings_percentage_after_discount,
+            estimated_savings_percentage_before_discount, implementation_effort, last_refresh_timestamp,
+            recommendation_id, recommendation_lookback_period_in_days, recommendation_source,
+            recommended_resource_details, recommended_resource_summary, recommended_resource_type,
+            region, resource_arn, restart_needed, rollback_possible, tags FROM COST_OPTIMIZATION_RECOMMENDATIONS
+          TableConfigurations:
+            COST_OPTIMIZATION_RECOMMENDATIONS:
+              FILTER: '{}'
+              INCLUDE_ALL_RECOMMENDATIONS: 'TRUE'
+        DestinationConfigurations:
+          S3Destination:
+            S3Bucket:
+              !If [
+                CreateBucket,
+                  !Ref VerticeGovernanceS3Bucket,
+                  !Ref BillingBucketName,
+                ]
+            S3OutputConfigurations:
+              Compression: 'PARQUET'
+              Format: 'PARQUET'
+              OutputType: 'CUSTOM'
+              Overwrite: 'OVERWRITE_REPORT'
+            S3Prefix: !Ref DataExportS3Prefix
+            S3Region: !Ref AWS::Region
+        Name: !Ref DataExportName
+        RefreshCadence:
+          Frequency: 'SYNCHRONOUS'
 
   VerticeGovernanceIAMRole:
     Type: 'AWS::IAM::Role'
@@ -195,6 +254,10 @@ Resources:
           - Sid: 'VerticeBillingAccess'
             Effect: 'Allow'
             Action:
+              - 'bcm-data-exports:GetExport'
+              - 'bcm-data-exports:GetExecution'
+              - 'bcm-data-exports:ListExports'
+              - 'bcm-data-exports:ListExecutions'
               - 'budgets:Describe*'
               - 'budgets:View*'
               - 'ce:Describe*'
@@ -289,7 +352,7 @@ Resources:
 
 Outputs:
   VerticeGovernanceRoleArn:
-    Value: !GetAtt VerticeGovernanceIAMRole.Arn
+    Value: !If [CreateRole, !GetAtt VerticeGovernanceIAMRole.Arn, !Ref AWS::NoValue]
   FullS3Path:
     Value: !Join ["/", ["s3:/", !Ref BillingBucketName, !Ref BillingReportName, !Ref BillingReportS3Prefix ] ]
   VerticeIAMRoleAccountIDs:
