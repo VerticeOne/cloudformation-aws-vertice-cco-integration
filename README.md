@@ -4,7 +4,7 @@ This repository provides CloudFormation templates helping to configure
 infrastructure in your account, including:
 
 - an IAM role allowing Vertice platform to access your resources,
-- an S3 bucket to store Cost and Usage Reports (CUR),
+- an S3 bucket to store Cost and Usage Reports (CUR) and optionally store Cost Optimization Recommendations Reports (COR),
 - a Cost and Usage Report definition, and
 - an AWS Data Exports report definition (COR format).
 
@@ -18,6 +18,8 @@ granted to Vertice in your account.
 > [!IMPORTANT]  
 > Make sure you are in the **us-east-1** region.
 > See [Region Selection](#region-selection) for explanation.
+> Before enabling an AWS Data Export report (COR format)
+> you need to have enabled **Cost Optimization Hub** in **Billing and Cost Management** in your **Billing AWS Account**
 
 The [Vertice governance CloudFormation template](templates/governance.yaml) is published
 to the following S3 address:
