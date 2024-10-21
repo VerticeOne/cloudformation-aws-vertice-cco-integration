@@ -126,7 +126,7 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${BillingBucketName}'
               - !Sub 'arn:aws:s3:::${BillingBucketName}/*'
-          - Sid: AllowBillingBucketAccess
+          - Sid: EnableAWSDataExportsToWriteToS3AndCheckPolicy
             Effect: 'Allow'
             Action:
               - 's3:GetBucketAcl'
@@ -142,8 +142,8 @@ Resources:
             Condition:
               StringLike:
                 'aws:SourceArn':
-                  - !Sub 'arn:aws:bcm-data-exports:us-east-1:${AWS::AccountId}:export/*'
                   - !Sub 'arn:aws:cur:us-east-1:${AWS::AccountId}:definition/*'
+                  - !Sub 'arn:aws:bcm-data-exports:us-east-1:${AWS::AccountId}:export/*'
                 'aws:SourceAccount': !Sub ${AWS::AccountId}
 
   VerticeGovernanceBillingReport:
@@ -170,7 +170,7 @@ Resources:
       TimeUnit: 'HOURLY'
 
   VerticeGovernanceDataExport:
-    Type: AWS::BCMDataExports::Export
+    Type: 'AWS::BCMDataExports::Export'
     Condition: CreateDataExport
     Metadata:
       # https://github.com/aws/serverless-application-model/issues/259#issuecomment-523953576
