@@ -24,7 +24,7 @@ granted to Vertice in your account.
 >>  * On this page navigate to **Data Exports** -> Click **Create** -> Select **Standard data export** and **Cost optimization recommendations**
 >>  * Now you should see a warning table with the following title: **Exports of Cost Optimization Recommendations requires a Service Linked Role (SLR)**
 >>>    * If you don't see the warning, you have already created the **AWSServiceRoleForBCMDataExports** service-linked role.
->>  * In this warning table, click to **Create service-linked role** button, and it will create the necessary service for you
+>>  * In this warning table, click the **Create service-linked role** button, and it will create the necessary role for you.
 >>  * You can leave the page now, without finishing the creation of the Data export, or you can continue with the settings below
 >![cor_service_linked_role_creation.png](readme_resources/cor_service_linked_role_creation.png)
 >* Enable **Cost Optimization Hub** in **Billing and Cost Management** in your **Billing AWS Account**
