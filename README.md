@@ -30,7 +30,6 @@ granted to Vertice in your account.
 >* Enable **Cost Optimization Hub** in **Billing and Cost Management** in your **Billing AWS Account**
 >  * ![cost_optimization_hub.png](readme_resources/cost_optimization_hub.png)
 
-
 The [Vertice governance CloudFormation template](templates/governance.yaml) is published
 to the following S3 address:
 
