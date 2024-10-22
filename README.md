@@ -19,7 +19,7 @@ granted to Vertice in your account.
 > Make sure you are in the **us-east-1** region.
 > See [Region Selection](#region-selection) for explanation.</br>
 > Before enabling an AWS Data Export report (COR format) through this template:
->* Create **AWSServiceRoleForBCMDataExports** service-linked role
+>* Create the **AWSServiceRoleForBCMDataExports** service-linked role
 >>  * In the AWS Console, go to the **Billing and Cost Management** page
 >>  * On this page navigate to **Data Exports** -> Click to **Create** -> Select **Standard data export** and **Cost optimization recommendations**
 >>  * Now you should see a warning table with the following title **Exports of Cost Optimization Recommendations requires a Service Linked Role (SLR)**
