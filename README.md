@@ -27,7 +27,7 @@ granted to Vertice in your account.
 >>  * In this warning table, click the **Create service-linked role** button, and it will create the necessary role for you.
 >>  * You can leave the page now, without finishing the creation of the Data export, or you can continue with the settings below
 >![cor_service_linked_role_creation.png](readme_resources/cor_service_linked_role_creation.png)
->* Enable **Cost Optimization Hub** in **Billing and Cost Management** in your **Billing AWS Account**
+>* Enable **Cost Optimization Hub** in **Billing and Cost Management** in your **Billing AWS Account**:
 >>![cost_optimization_hub.png](readme_resources/cost_optimization_hub.png)
 
 The [Vertice governance CloudFormation template](templates/governance.yaml) is published
