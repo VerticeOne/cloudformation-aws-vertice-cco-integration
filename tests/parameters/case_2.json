@@ -1,0 +1,42 @@
+[
+  {
+    "ParameterKey": "AccountType",
+    "ParameterValue": "billing"
+  },
+  {
+    "ParameterKey": "BillingBucketName",
+    "ParameterValue": "test-gov-template-case-2"
+  },
+  {
+    "ParameterKey": "VerticeSTSExternalID",
+    "ParameterValue": "868af261-713d-461d-9ba1-a76cdd9888df"
+  },
+  {
+    "ParameterKey": "VerticeIAMRoleName",
+    "ParameterValue": "test-gov-template-case-2"
+  },
+  {
+    "ParameterKey": "Ec2RiPolicyCreate",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "ElastiCacheRiPolicyCreate",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "EsRiPolicyCreate",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "RdsRiPolicyCreate",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "RedshiftRiPolicyCreate",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "SavingPlansPolicyCreate",
+    "ParameterValue": "false"
+  }
+]

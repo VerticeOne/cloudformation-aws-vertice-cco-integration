@@ -71,6 +71,36 @@ Parameters:
     Description: 'Unique identifier for the Vertice platform to assume the IAM role in your account'
     MinLength: '36'
     MaxLength: '36'
+  Ec2RiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase EC2 Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  ElastiCacheRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase elasticache Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  EsRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase ES Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  RdsRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase RDS Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  RedshiftRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase Redshift Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  SavingPlansPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase Saving Plans.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
 
 Conditions:
   BillingAccess: !Or
@@ -98,6 +128,12 @@ Conditions:
   CreateCorePolicy: !And
     - !Condition CoreAccess
     - !Condition CreateRole
+  CreateEc2Policy: !Equals [!Ref Ec2RiPolicyCreate, 'true']
+  CreateElastiCachePolicy: !Equals [!Ref ElastiCacheRiPolicyCreate, 'true']
+  CreateEsPolicy: !Equals [!Ref EsRiPolicyCreate, 'true']
+  CreateRdsPolicy: !Equals [!Ref RdsRiPolicyCreate, 'true']
+  CreateRedshiftPolicy: !Equals [!Ref RedshiftRiPolicyCreate, 'true']
+  CreateSavingPlansPolicy: !Equals [!Ref SavingPlansPolicyCreate, 'true']
 
 Resources:
   VerticeGovernanceS3Bucket:
@@ -276,34 +312,25 @@ Resources:
               - 'ce:Get*'
               - 'ce:List*'
               - 'cur:Describe*'
-              - 'ec2:DeleteQueuedReservedInstances'
               - 'ec2:DescribeAvailabilityZones'
               - 'ec2:DescribeInstanceTypeOfferings'
               - 'ec2:DescribeInstanceTypes'
               - 'ec2:DescribeInstances'
               - 'ec2:DescribeReservedInstances'
               - 'ec2:DescribeReservedInstancesOfferings'
-              - 'ec2:ModifyReservedInstances'
-              - 'ec2:PurchaseReservedInstancesOffering'
               - 'elasticache:DescribeReservedCacheNodes'
               - 'elasticache:DescribeReservedCacheNodesOfferings'
-              - 'elasticache:PurchaseReservedCacheNodesOffering'
               - 'es:DescribeReservedInstanceOfferings'
               - 'es:DescribeReservedInstances'
-              - 'es:PurchaseReservedInstanceOffering'
               - 'organizations:Describe*'
               - 'organizations:List*'
               - 'rds:DescribeDBInstances'
               - 'rds:DescribeReservedDBInstances'
               - 'rds:DescribeReservedDBInstancesOfferings'
-              - 'rds:PurchaseReservedDBInstancesOffering'
               - 'redshift:DescribeReservedNodeOfferings'
               - 'redshift:DescribeReservedNodes'
-              - 'redshift:PurchaseReservedNodeOffering'
               - 'savingsplans:Describe*'
               - 'savingsplans:List*'
-              - 'savingsplans:CreateSavingsPlan'
-              - 'savingsplans:DeleteQueuedSavingsPlan'
             Resource: '*'
           - Sid: 'VerticeBillingBucketAccess'
             Effect: 'Allow'
@@ -314,6 +341,128 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${BillingBucketName}'
               - !Sub 'arn:aws:s3:::${BillingBucketName}/*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceEc2RiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateEc2Policy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase EC2 Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeEc2RiAccess'
+            Effect: 'Allow'
+            Action:
+              # TODO: align with TF version
+              - 'ec2:DescribeAvailabilityZones'
+              - 'ec2:DescribeInstanceTypeOfferings'
+              - 'ec2:DescribeInstanceTypes'
+              - 'ec2:DescribeInstances'
+              - 'ec2:DescribeReservedInstances'
+              - 'ec2:DescribeReservedInstancesOfferings'
+              - 'ec2:PurchaseReservedInstancesOffering'
+              - 'ec2:ModifyReservedInstances'
+              - 'ec2:DeleteQueuedReservedInstances'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceElastiCacheRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateElastiCachePolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase ElastiCache Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeElastiCacheRiAccess'
+            Effect: 'Allow'
+            Action:
+              # TODO: align with TF version
+              - 'elasticache:DescribeReservedCacheNodes'
+              - 'elasticache:DescribeReservedCacheNodesOfferings'
+              - 'elasticache:PurchaseReservedCacheNodesOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceEsRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateEsPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase ES Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeEsRiAccess'
+            Effect: 'Allow'
+            Action:
+              # TODO: align with TF version
+              - 'es:DescribeReservedInstanceOfferings'
+              - 'es:DescribeReservedInstances'
+              - 'es:PurchaseReservedInstanceOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceRdsRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateRdsPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase RDS Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeRdsRiAccess'
+            Effect: 'Allow'
+            Action:
+              # TODO: align with TF version
+              - 'rds:DescribeDBInstances'
+              - 'rds:DescribeReservedDBInstances'
+              - 'rds:DescribeReservedDBInstancesOfferings'
+              - 'rds:PurchaseReservedDBInstancesOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceRedshiftRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateRedshiftPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase Redshift Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeRedshiftRiAccess'
+            Effect: 'Allow'
+            Action:
+              # TODO: align with TF version
+              - 'redshift:DescribeReservedNodeOfferings'
+              - 'redshift:DescribeReservedNodes'
+              - 'redshift:PurchaseReservedNodeOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceSavingPlansPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateSavingPlansPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase Saving Plans'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeSavingPlansAccess'
+            Effect: 'Allow'
+            Action:
+              # TODO: align with TF version
+              - 'savingsplans:Describe*'
+              - 'savingsplans:List*'
+              - 'savingsplans:CreateSavingsPlan'
+              - 'savingsplans:DeleteQueuedSavingsPlan'
+            Resource: '*'
       Roles:
         - !Ref VerticeGovernanceIAMRole
 
