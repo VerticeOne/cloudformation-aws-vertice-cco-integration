@@ -1,4 +1,5 @@
 # Vertice Cloud Cost Optimization CloudFormation templates
+
 This repository provides CloudFormation templates helping to configure
 [Vertice Cloud Cost Optimization](https://www.vertice.one/product/cloud-cost-optimization)
 infrastructure in your account, including:
@@ -19,16 +20,17 @@ granted to Vertice in your account.
 > Make sure you are in the **us-east-1** region.
 > See [Region Selection](#region-selection) for explanation.</br>
 > Before enabling an AWS Data Export report (COR format) through this template:
-> * Enable **Cost Optimization Hub** in **Billing and Cost Management** in your **Billing AWS Account**:
-> ![cost_optimization_hub.png](readme_resources/cost_optimization_hub.png)
-> * Create the **AWSServiceRoleForBCMDataExports** service-linked role
->   * In the AWS Console, go to the **Billing and Cost Management** page
->   * On this page navigate to **Data Exports** -> Click **Create** -> Select **Standard data export** and **Cost optimization recommendations**
->   * Now you should see a warning table with the following title: **Exports of Cost Optimization Recommendations requires a Service Linked Role (SLR)**
->      * If you don't see the warning, you have already created the **AWSServiceRoleForBCMDataExports** service-linked role.
->   * In this warning table, click the **Create service-linked role** button, and it will create the necessary role for you.
->   * You can leave the page now, without finishing the creation of the Data export, or you can continue with the settings below
-> ![cor_service_linked_role_creation.png](readme_resources/cor_service_linked_role_creation.png)
+>
+> - Enable **Cost Optimization Hub** in **Billing and Cost Management** in your **Billing AWS Account**:
+>   ![cost_optimization_hub.png](readme_resources/cost_optimization_hub.png)
+> - Create the **AWSServiceRoleForBCMDataExports** service-linked role
+>   - In the AWS Console, go to the **Billing and Cost Management** page
+>   - On this page navigate to **Data Exports** -> Click **Create** -> Select **Standard data export** and **Cost optimization recommendations**
+>   - Now you should see a warning table with the following title: **Exports of Cost Optimization Recommendations requires a Service Linked Role (SLR)**
+>     - If you don't see the warning, you have already created the **AWSServiceRoleForBCMDataExports** service-linked role.
+>   - In this warning table, click the **Create service-linked role** button, and it will create the necessary role for you.
+>   - You can leave the page now, without finishing the creation of the Data export, or you can continue with the settings below
+>     ![cor_service_linked_role_creation.png](readme_resources/cor_service_linked_role_creation.png)
 
 The [Vertice governance CloudFormation template](templates/governance.yaml) is published
 to the following S3 address:
@@ -83,6 +85,7 @@ Please see the `Parameters` section of the template for further details.
 The template supports the [Split Cost Allocation Data](https://aws.amazon.com/blogs/aws-cloud-financial-management/improve-cost-visibility-of-amazon-eks-with-aws-split-cost-allocation-data/) opt-in feature of the Cost and Usage Report, which provides more granular data for ECS/EKS usage. Please note that this feature may increase your costs slightly due to a larger volume of usage data generated.
 
 To enable this feature:
+
 1. Opt in to Split Cost Allocation Data in the [Cost Management Preferences](https://us-east-1.console.aws.amazon.com/costmanagement/home?region=eu-west-1#/settings) page of the AWS Console (Step 1 of the guide linked above).
 2. Set the `BillingReportSplitCostAllocationData: true` parameter on this module.
 

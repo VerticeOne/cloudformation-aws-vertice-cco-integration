@@ -33,8 +33,8 @@ Parameters:
   BillingBucketName:
     Description: 'Name of S3 bucket in which to store Cost and Usage Reports data.'
     Type: String
-    MinLength: "3"
-    MaxLength: "63"
+    MinLength: '3'
+    MaxLength: '63'
   BillingBucketDeletionPolicy:
     Description: 'Behavior regarding S3 bucket if the stack is created/tries to replace it.'
     Default: 'Retain'
@@ -69,8 +69,8 @@ Parameters:
   VerticeSTSExternalID:
     Type: String
     Description: 'Unique identifier for the Vertice platform to assume the IAM role in your account'
-    MinLength: "36"
-    MaxLength: "36"
+    MinLength: '36'
+    MaxLength: '36'
 
 Conditions:
   BillingAccess: !Or
@@ -154,7 +154,11 @@ Resources:
       AdditionalArtifacts: ['ATHENA']
       AdditionalSchemaElements:
         - 'RESOURCES'
-        - !If [BillingSplitCost, 'SPLIT_COST_ALLOCATION_DATA', !Ref AWS::NoValue]
+        - !If [
+            BillingSplitCost,
+            'SPLIT_COST_ALLOCATION_DATA',
+            !Ref AWS::NoValue,
+          ]
       Compression: 'Parquet'
       Format: 'Parquet'
       RefreshClosedReports: true
@@ -174,11 +178,19 @@ Resources:
     Condition: CreateDataExport
     Metadata:
       # https://github.com/aws/serverless-application-model/issues/259#issuecomment-523953576
-      DependsOn: [!If [CreateBucket, !Ref VerticeGovernanceS3BucketPolicy, !Ref AWS::NoValue]]
+      DependsOn:
+        [
+          !If [
+            CreateBucket,
+            !Ref VerticeGovernanceS3BucketPolicy,
+            !Ref AWS::NoValue,
+          ],
+        ]
     Properties:
       Export:
         DataQuery:
-          QueryStatement: SELECT account_id, action_type, currency_code, current_resource_details,
+          QueryStatement:
+            SELECT account_id, action_type, currency_code, current_resource_details,
             current_resource_summary, current_resource_type, estimated_monthly_cost_after_discount,
             estimated_monthly_cost_before_discount, estimated_monthly_savings_after_discount,
             estimated_monthly_savings_before_discount, estimated_savings_percentage_after_discount,
@@ -195,9 +207,9 @@ Resources:
             S3Bucket:
               !If [
                 CreateBucket,
-                  !Ref VerticeGovernanceS3Bucket,
-                  !Ref BillingBucketName,
-                ]
+                !Ref VerticeGovernanceS3Bucket,
+                !Ref BillingBucketName,
+              ]
             S3OutputConfigurations:
               Compression: 'PARQUET'
               Format: 'PARQUET'
@@ -361,8 +373,18 @@ Resources:
 
 Outputs:
   VerticeGovernanceRoleArn:
-    Value: !If [CreateRole, !GetAtt VerticeGovernanceIAMRole.Arn, !Ref AWS::NoValue]
+    Value:
+      !If [CreateRole, !GetAtt VerticeGovernanceIAMRole.Arn, !Ref AWS::NoValue]
   FullS3Path:
-    Value: !Join ["/", ["s3:/", !Ref BillingBucketName, !Ref BillingReportName, !Ref BillingReportS3Prefix ] ]
+    Value:
+      !Join [
+        '/',
+        [
+          's3:/',
+          !Ref BillingBucketName,
+          !Ref BillingReportName,
+          !Ref BillingReportS3Prefix,
+        ],
+      ]
   VerticeIAMRoleAccountIDs:
     Value: !Join [',', !Ref VerticeIAMRoleAccountIDs]
