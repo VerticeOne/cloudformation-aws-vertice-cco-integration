@@ -2,7 +2,7 @@
 name: Publish template as latest
 run-name: Publish template ${{ inputs.tag }} as latest
 
-"on":
+'on':
   workflow_dispatch:
     inputs:
       tag:

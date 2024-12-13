@@ -33,8 +33,8 @@ Parameters:
   BillingBucketName:
     Description: 'Name of S3 bucket in which to store Cost and Usage Reports data.'
     Type: String
-    MinLength: "3"
-    MaxLength: "63"
+    MinLength: '3'
+    MaxLength: '63'
   BillingBucketDeletionPolicy:
     Description: 'Behavior regarding S3 bucket if the stack is created/tries to replace it.'
     Default: 'Retain'
@@ -69,8 +69,38 @@ Parameters:
   VerticeSTSExternalID:
     Type: String
     Description: 'Unique identifier for the Vertice platform to assume the IAM role in your account'
-    MinLength: "36"
-    MaxLength: "36"
+    MinLength: '36'
+    MaxLength: '36'
+  Ec2RiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase EC2 Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  ElastiCacheRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase elasticache Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  EsRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase ES Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  RdsRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase RDS Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  RedshiftRiPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase Redshift Reserved Instances.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
+  SavingPlansPolicyCreate:
+    Description: 'Create IAM policy allowing Vertice to purchase Saving Plans.'
+    Default: 'true'
+    Type: String
+    AllowedValues: ['true', 'false']
 
 Conditions:
   BillingAccess: !Or
@@ -98,6 +128,13 @@ Conditions:
   CreateCorePolicy: !And
     - !Condition CoreAccess
     - !Condition CreateRole
+
+  CreateEsPolicy: !Equals [!Ref EsRiPolicyCreate, 'true']
+  CreateEc2Policy: !Equals [!Ref Ec2RiPolicyCreate, 'true']
+  CreateRdsPolicy: !Equals [!Ref RdsRiPolicyCreate, 'true']
+  CreateRedshiftPolicy: !Equals [!Ref RedshiftRiPolicyCreate, 'true']
+  CreateElastiCachePolicy: !Equals [!Ref ElastiCacheRiPolicyCreate, 'true']
+  CreateSavingPlansPolicy: !Equals [!Ref SavingPlansPolicyCreate, 'true']
 
 Resources:
   VerticeGovernanceS3Bucket:
@@ -154,7 +191,11 @@ Resources:
       AdditionalArtifacts: ['ATHENA']
       AdditionalSchemaElements:
         - 'RESOURCES'
-        - !If [BillingSplitCost, 'SPLIT_COST_ALLOCATION_DATA', !Ref AWS::NoValue]
+        - !If [
+            BillingSplitCost,
+            'SPLIT_COST_ALLOCATION_DATA',
+            !Ref AWS::NoValue,
+          ]
       Compression: 'Parquet'
       Format: 'Parquet'
       RefreshClosedReports: true
@@ -174,11 +215,19 @@ Resources:
     Condition: CreateDataExport
     Metadata:
       # https://github.com/aws/serverless-application-model/issues/259#issuecomment-523953576
-      DependsOn: [!If [CreateBucket, !Ref VerticeGovernanceS3BucketPolicy, !Ref AWS::NoValue]]
+      DependsOn:
+        [
+          !If [
+            CreateBucket,
+            !Ref VerticeGovernanceS3BucketPolicy,
+            !Ref AWS::NoValue,
+          ],
+        ]
     Properties:
       Export:
         DataQuery:
-          QueryStatement: SELECT account_id, action_type, currency_code, current_resource_details,
+          QueryStatement:
+            SELECT account_id, action_type, currency_code, current_resource_details,
             current_resource_summary, current_resource_type, estimated_monthly_cost_after_discount,
             estimated_monthly_cost_before_discount, estimated_monthly_savings_after_discount,
             estimated_monthly_savings_before_discount, estimated_savings_percentage_after_discount,
@@ -195,9 +244,9 @@ Resources:
             S3Bucket:
               !If [
                 CreateBucket,
-                  !Ref VerticeGovernanceS3Bucket,
-                  !Ref BillingBucketName,
-                ]
+                !Ref VerticeGovernanceS3Bucket,
+                !Ref BillingBucketName,
+              ]
             S3OutputConfigurations:
               Compression: 'PARQUET'
               Format: 'PARQUET'
@@ -264,34 +313,25 @@ Resources:
               - 'ce:Get*'
               - 'ce:List*'
               - 'cur:Describe*'
-              - 'ec2:DeleteQueuedReservedInstances'
               - 'ec2:DescribeAvailabilityZones'
               - 'ec2:DescribeInstanceTypeOfferings'
               - 'ec2:DescribeInstanceTypes'
               - 'ec2:DescribeInstances'
               - 'ec2:DescribeReservedInstances'
               - 'ec2:DescribeReservedInstancesOfferings'
-              - 'ec2:ModifyReservedInstances'
-              - 'ec2:PurchaseReservedInstancesOffering'
               - 'elasticache:DescribeReservedCacheNodes'
               - 'elasticache:DescribeReservedCacheNodesOfferings'
-              - 'elasticache:PurchaseReservedCacheNodesOffering'
               - 'es:DescribeReservedInstanceOfferings'
               - 'es:DescribeReservedInstances'
-              - 'es:PurchaseReservedInstanceOffering'
               - 'organizations:Describe*'
               - 'organizations:List*'
               - 'rds:DescribeDBInstances'
               - 'rds:DescribeReservedDBInstances'
               - 'rds:DescribeReservedDBInstancesOfferings'
-              - 'rds:PurchaseReservedDBInstancesOffering'
               - 'redshift:DescribeReservedNodeOfferings'
               - 'redshift:DescribeReservedNodes'
-              - 'redshift:PurchaseReservedNodeOffering'
               - 'savingsplans:Describe*'
               - 'savingsplans:List*'
-              - 'savingsplans:CreateSavingsPlan'
-              - 'savingsplans:DeleteQueuedSavingsPlan'
             Resource: '*'
           - Sid: 'VerticeBillingBucketAccess'
             Effect: 'Allow'
@@ -302,6 +342,122 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${BillingBucketName}'
               - !Sub 'arn:aws:s3:::${BillingBucketName}/*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceEc2RiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateEc2Policy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase EC2 Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeEc2RiAccess'
+            Effect: 'Allow'
+            Action:
+              - 'ec2:DescribeAvailabilityZones'
+              - 'ec2:DescribeInstanceTypeOfferings'
+              - 'ec2:DescribeInstanceTypes'
+              - 'ec2:DescribeInstances'
+              - 'ec2:DescribeReservedInstances'
+              - 'ec2:DescribeReservedInstancesOfferings'
+              - 'ec2:PurchaseReservedInstancesOffering'
+              - 'ec2:ModifyReservedInstances'
+              - 'ec2:DeleteQueuedReservedInstances'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceElastiCacheRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateElastiCachePolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase ElastiCache Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeElastiCacheRiAccess'
+            Effect: 'Allow'
+            Action:
+              - 'elasticache:DescribeReservedCacheNodes'
+              - 'elasticache:DescribeReservedCacheNodesOfferings'
+              - 'elasticache:PurchaseReservedCacheNodesOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceEsRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateEsPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase ES Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeEsRiAccess'
+            Effect: 'Allow'
+            Action:
+              - 'es:DescribeReservedInstanceOfferings'
+              - 'es:DescribeReservedInstances'
+              - 'es:PurchaseReservedInstanceOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceRdsRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateRdsPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase RDS Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeRdsRiAccess'
+            Effect: 'Allow'
+            Action:
+              - 'rds:DescribeDBInstances'
+              - 'rds:DescribeReservedDBInstances'
+              - 'rds:DescribeReservedDBInstancesOfferings'
+              - 'rds:PurchaseReservedDBInstancesOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceRedshiftRiPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateRedshiftPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase Redshift Reserved Instances'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeRedshiftRiAccess'
+            Effect: 'Allow'
+            Action:
+              - 'redshift:DescribeReservedNodeOfferings'
+              - 'redshift:DescribeReservedNodes'
+              - 'redshift:PurchaseReservedNodeOffering'
+            Resource: '*'
+      Roles:
+        - !Ref VerticeGovernanceIAMRole
+
+  VerticeGovernanceSavingPlansPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Condition: CreateSavingPlansPolicy
+    Properties:
+      Description: 'Policy allowing Vertice to purchase Saving Plans'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'VerticeSavingPlansAccess'
+            Effect: 'Allow'
+            Action:
+              - 'savingsplans:Describe*'
+              - 'savingsplans:List*'
+              - 'savingsplans:CreateSavingsPlan'
+              - 'savingsplans:DeleteQueuedSavingsPlan'
+            Resource: '*'
       Roles:
         - !Ref VerticeGovernanceIAMRole
 
@@ -361,8 +517,18 @@ Resources:
 
 Outputs:
   VerticeGovernanceRoleArn:
-    Value: !If [CreateRole, !GetAtt VerticeGovernanceIAMRole.Arn, !Ref AWS::NoValue]
+    Value:
+      !If [CreateRole, !GetAtt VerticeGovernanceIAMRole.Arn, !Ref AWS::NoValue]
   FullS3Path:
-    Value: !Join ["/", ["s3:/", !Ref BillingBucketName, !Ref BillingReportName, !Ref BillingReportS3Prefix ] ]
+    Value:
+      !Join [
+        '/',
+        [
+          's3:/',
+          !Ref BillingBucketName,
+          !Ref BillingReportName,
+          !Ref BillingReportS3Prefix,
+        ],
+      ]
   VerticeIAMRoleAccountIDs:
     Value: !Join [',', !Ref VerticeIAMRoleAccountIDs]

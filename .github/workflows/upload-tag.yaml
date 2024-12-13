@@ -2,7 +2,7 @@
 name: Upload template to S3
 run-name: Upload template ${{ github.ref_name }} to S3
 
-"on":
+'on':
   push:
     tags:
       - 'v[0-9]+\.[0-9]+\.[0-9]'
