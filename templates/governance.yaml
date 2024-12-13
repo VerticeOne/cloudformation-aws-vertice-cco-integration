@@ -128,11 +128,12 @@ Conditions:
   CreateCorePolicy: !And
     - !Condition CoreAccess
     - !Condition CreateRole
-  CreateEc2Policy: !Equals [!Ref Ec2RiPolicyCreate, 'true']
-  CreateElastiCachePolicy: !Equals [!Ref ElastiCacheRiPolicyCreate, 'true']
+
   CreateEsPolicy: !Equals [!Ref EsRiPolicyCreate, 'true']
+  CreateEc2Policy: !Equals [!Ref Ec2RiPolicyCreate, 'true']
   CreateRdsPolicy: !Equals [!Ref RdsRiPolicyCreate, 'true']
   CreateRedshiftPolicy: !Equals [!Ref RedshiftRiPolicyCreate, 'true']
+  CreateElastiCachePolicy: !Equals [!Ref ElastiCacheRiPolicyCreate, 'true']
   CreateSavingPlansPolicy: !Equals [!Ref SavingPlansPolicyCreate, 'true']
 
 Resources:
@@ -355,7 +356,6 @@ Resources:
           - Sid: 'VerticeEc2RiAccess'
             Effect: 'Allow'
             Action:
-              # TODO: align with TF version
               - 'ec2:DescribeAvailabilityZones'
               - 'ec2:DescribeInstanceTypeOfferings'
               - 'ec2:DescribeInstanceTypes'
@@ -380,7 +380,6 @@ Resources:
           - Sid: 'VerticeElastiCacheRiAccess'
             Effect: 'Allow'
             Action:
-              # TODO: align with TF version
               - 'elasticache:DescribeReservedCacheNodes'
               - 'elasticache:DescribeReservedCacheNodesOfferings'
               - 'elasticache:PurchaseReservedCacheNodesOffering'
@@ -399,7 +398,6 @@ Resources:
           - Sid: 'VerticeEsRiAccess'
             Effect: 'Allow'
             Action:
-              # TODO: align with TF version
               - 'es:DescribeReservedInstanceOfferings'
               - 'es:DescribeReservedInstances'
               - 'es:PurchaseReservedInstanceOffering'
@@ -418,7 +416,6 @@ Resources:
           - Sid: 'VerticeRdsRiAccess'
             Effect: 'Allow'
             Action:
-              # TODO: align with TF version
               - 'rds:DescribeDBInstances'
               - 'rds:DescribeReservedDBInstances'
               - 'rds:DescribeReservedDBInstancesOfferings'
@@ -438,7 +435,6 @@ Resources:
           - Sid: 'VerticeRedshiftRiAccess'
             Effect: 'Allow'
             Action:
-              # TODO: align with TF version
               - 'redshift:DescribeReservedNodeOfferings'
               - 'redshift:DescribeReservedNodes'
               - 'redshift:PurchaseReservedNodeOffering'
@@ -457,7 +453,6 @@ Resources:
           - Sid: 'VerticeSavingPlansAccess'
             Effect: 'Allow'
             Action:
-              # TODO: align with TF version
               - 'savingsplans:Describe*'
               - 'savingsplans:List*'
               - 'savingsplans:CreateSavingsPlan'

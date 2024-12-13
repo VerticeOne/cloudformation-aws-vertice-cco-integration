@@ -10,9 +10,7 @@ infrastructure in your account, including:
 - an AWS Data Exports report definition (COR format).
 
 We also offer Terraform configuration of the same at
-[VerticeOne/terraform-aws-vertice-integration](https://github.com/VerticeOne/terraform-aws-vertice-integration),
-which supports a more fine-tuned configuration of permissions
-granted to Vertice in your account.
+[VerticeOne/terraform-aws-vertice-integration](https://github.com/VerticeOne/terraform-aws-vertice-integration).
 
 ## Using the template
 
@@ -75,9 +73,19 @@ The Unique identifier provided to you for the Vertice platform to assume the IAM
 
 #### Optional parameters
 
-The creation of specific resources is further controlled by the
-**BillingReportCreate**, **BillingBucketCreate**, **DataExportCreate**, and **VerticeIAMRoleCreate**
-parameters.
+The creation of specific resources is further controlled by the following optional parameters:
+
+- BillingReportCreate
+- BillingBucketCreate
+- DataExportCreate
+- VerticeIAMRoleCreate
+- Ec2RiPolicyCreate
+- ElastiCacheRiPolicyCreate
+- EsRiPolicyCreate
+- RdsRiPolicyCreate
+- RedshiftRiPolicyCreate
+- SavingPlansPolicyCreate
+
 Please see the `Parameters` section of the template for further details.
 
 ##### BillingReportSplitCostAllocationData
