@@ -186,6 +186,15 @@ Resources:
   VerticeGovernanceBillingReport:
     Type: 'AWS::CUR::ReportDefinition'
     Condition: CreateReport
+    Metadata:
+      DependsOn:
+        [
+          !If [
+            CreateBucket,
+            !Ref VerticeGovernanceS3BucketPolicy,
+            !Ref AWS::NoValue,
+          ],
+        ]
     Properties:
       ReportName: !Ref BillingReportName
       AdditionalArtifacts: ['ATHENA']
